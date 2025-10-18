@@ -64,6 +64,17 @@ fn generate_inner(cmd: &Command) -> Vec<String> {
         }
 
         lines.push("})".to_owned());
+
+        // Add descriptions for commands that have them
+        for subcommand in &subcommands {
+            if let Some(about) = subcommand.get_about() {
+                let about = escape_help(about);
+                let visible_names = subcommand.get_name_and_visible_aliases();
+                let command_names = lua_string_list(visible_names);
+
+                lines.push(format!(":adddescriptions({{ {command_names}, description = \"{about}\" }})"));
+            }
+        }
     }
 
     // `addflags` isn't positional, so we can call it separately for every option.
