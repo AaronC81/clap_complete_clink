@@ -1,0 +1,15 @@
+[package]
+name = "clap_complete_clink"
+edition = "2021"
+version = "1.0.0"
+description = "Generate Clink completion scripts for clap"
+license = "MIT"
+license-file = "LICENSE"
+homepage = "https://github.com/AaronC81/clap_complete_clink"
+repository = "https://github.com/AaronC81/clap_complete_clink"
+categories = ["command-line-interface"]
+keywords = ["clap"]
+
+[dependencies]
+clap = { version = "4.0.0", default-features = false, features = ["std"] }
+clap_complete = { version = "4.0.0" }
