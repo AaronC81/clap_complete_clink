@@ -66,8 +66,46 @@ fn generate_inner(cmd: &Command) -> Vec<String> {
         lines.push("})".to_owned());
     }
 
-    // TODO: options
-    // TODO: flags
+    // `addflags` isn't positional, so we can call it separately for every option.
+    // This makes the generation code a little simpler.
+    for opt in cmd.get_opts() {
+        // Clink doesn't distinguish between long and short names
+        let mut visible_names = vec![];
+        if let Some(longs) = opt.get_long_and_visible_aliases() {
+            for long in longs {
+                visible_names.push(format!("--{long}"));
+            }
+        }
+        if let Some(shorts) = opt.get_short_and_visible_aliases() {
+            for short in shorts {
+                visible_names.push(format!("-{short}"));
+            }
+        }
+
+        let opt_names = lua_string_list(visible_names);
+        let help = opt.get_help().map(escape_help).unwrap_or_default();
+
+        lines.push(format!(":addflags({opt_names})"));
+        lines.push(format!(":adddescriptions({{ {opt_names}, description = \"{help}\" }})"));
+    }
 
     lines
+}
+
+/// Escape double quotes from a string.
+fn escape_string(string: &str) -> String {
+    string.replace('"', "\\\"")
+}
+
+/// Escape newlines from help text, while converting the styled string into a plain-text string.
+fn escape_help(help: &StyledStr) -> String {
+    escape_string(&help.to_string().replace('\n', " "))
+}
+
+/// Quote and comma-separate a sequence so it can be interpolated into a Lua argument list or table.
+fn lua_string_list<S: AsRef<str>>(strs: Vec<S>) -> String {
+    strs.iter()
+        .map(|s| format!("\"{}\"", s.as_ref()))
+        .collect::<Vec<_>>()
+        .join(", ")
 }
